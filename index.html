@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Album</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 0;
+            margin-right: 1rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        .panel {
+            display: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Search Section */
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: var(--surface);
+            transition: border-color 0.15s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .photo-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--surface);
+            transition: transform 0.2s;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-labels {
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+
+        /* Upload Section */
+        .upload-form {
+            max-width: 500px;
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* States */
+        .status-msg {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .status-msg.error {
+            display: block;
+            background-color: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .status-msg.success {
+            display: block;
+            background-color: #f0fdf4;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--text-muted);
+        }
+
+        /* Microphone button */
+        .mic-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-btn:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+        .mic-btn.listening {
+            border-color: var(--danger);
+            color: var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Photo Album</h1>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Assignment 3</div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('search')">Search</button>
+            <button class="tab-btn" onclick="switchTab('upload')">Upload</button>
+        </div>
+
+        <!-- Search Panel -->
+        <div id="search-panel" class="panel active">
+            <div class="search-box">
+                <input type="text" id="query" placeholder="Search photos (e.g., 'dogs', 'trees', 'mountain')..." onkeydown="if(event.key==='Enter') searchPhotos()">
+                <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Use Voice">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <button class="btn" onclick="searchPhotos()">Search</button>
+            </div>
+
+            <div id="search-status" class="status-msg"></div>
+            <div id="results" class="grid">
+                <!-- Photos will appear here -->
+            </div>
+            <div id="empty-search" class="empty-state" style="display: none;">
+                <p>No photos found. Try a different search term.</p>
+            </div>
+        </div>
+
+        <!-- Upload Panel -->
+        <div id="upload-panel" class="panel">
+            <div class="upload-form">
+                <div class="form-group">
+                    <label for="photo-file">Select Photo</label>
+                    <input type="file" id="photo-file" accept="image/png, image/jpeg, image/jpg">
+                </div>
+                
+                <div class="form-group">
+                    <label for="custom-labels">Custom Labels (Optional)</label>
+                    <input type="text" id="custom-labels" placeholder="e.g. vacation, family, boston">
+                    <p class="helper-text">Separate multiple labels with commas</p>
+                </div>
+
+                <button class="btn" onclick="uploadPhoto()" id="upload-btn" style="width: 100%">Upload Photo</button>
+                <div id="upload-status" class="status-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const API_ENDPOINT = 'https://u89hz1ae44.execute-api.us-east-1.amazonaws.com/prod'; 
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`${tabName}-panel`).classList.add('active');
+            // Find button that matches
+            const btns = document.getElementsByClassName('tab-btn');
+            if(tabName === 'search') btns[0].classList.add('active');
+            else btns[1].classList.add('active');
+        }
+
+        // --- SEARCH FUNCTIONALITY ---
+        async function searchPhotos() {
+            const query = document.getElementById('query').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const emptyDiv = document.getElementById('empty-search');
+            const statusDiv = document.getElementById('search-status');
+            
+            if (!query) return;
+
+            resultsDiv.innerHTML = '';
+            emptyDiv.style.display = 'none';
+            statusDiv.className = 'status-msg'; // reset
+            statusDiv.style.display = 'none';
+
+            try {
+                // Call API Gateway
+                const response = await fetch(`${API_ENDPOINT}/search?q=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Search failed');
+
+                const data = await response.json();
+                // Handle different response structures (API Gateway sometimes wraps it)
+                const results = data.results || data; 
+
+                if (!results || results.length === 0) {
+                    emptyDiv.style.display = 'block';
+                    return;
+                }
+
+                // Render Results
+                results.forEach(photo => {
+                    const card = document.createElement('div');
+                    card.className = 'photo-card';
+                    
+                    // Join labels safely
+                    const labels = Array.isArray(photo.labels) ? photo.labels.join(', ') : '';
+
+                    card.innerHTML = `
+                        <a href="${photo.url}" target="_blank">
+                            <img src="${photo.url}" alt="Photo">
+                        </a>
+                        <div class="photo-labels">${labels}</div>
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error(err);
+                statusDiv.textContent = "Error searching photos. Please try again.";
+                statusDiv.classList.add('error');
+            }
+        }
+
+        // --- UPLOAD FUNCTIONALITY ---
+        async function uploadPhoto() {
+            const fileInput = document.getElementById('photo-file');
+            const labelsInput = document.getElementById('custom-labels');
+            const statusDiv = document.getElementById('upload-status');
+            const btn = document.getElementById('upload-btn');
+
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first.');
+                return;
+            }
+
+            // UI Loading State
+            btn.disabled = true;
+            btn.textContent = "Uploading...";
+            statusDiv.style.display = 'none';
+            statusDiv.className = 'status-msg';
+
+            try {
+                // 1. We use the filename as the key. 
+                // Ideally, we should sanitise this or use a UUID, but for this assignment filename is usually fine.
+                const filename = file.name;
+                const customLabels = labelsInput.value.trim();
+
+                // 2. Prepare Headers
+                const headers = {
+                    'Content-Type': file.type
+                };
+                if (customLabels) {
+                    headers['x-amz-meta-customLabels'] = customLabels;
+                }
+
+                // 3. PUT to API Gateway
+                // Note: Your API Gateway needs a PUT /photos/{folder}/{item} or similar resource.
+                // Or if you set up PUT /photos, you might be passing the filename in the query or body?
+                // STANDARD ASSIGNMENT PATTERN: PUT /photos/bucket-name/filename
+                // BUT usually for this assignment, people configure: PUT /photos/{item} -> S3 Bucket/{item}
+                
+                const response = await fetch(`${API_ENDPOINT}/photos/${filename}`, {
+                    method: 'PUT',
+                    headers: headers,
+                    body: file
+                });
+
+                if (response.ok) {
+                    statusDiv.textContent = "Photo uploaded successfully!";
+                    statusDiv.classList.add('success');
+                    // Reset form
+                    fileInput.value = '';
+                    labelsInput.value = '';
+                } else {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+
+            } catch (err) {
+                console.error(err);
+                statusDiv.textContent = "Error uploading photo. Check console for details.";
+                statusDiv.classList.add('error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Upload Photo";
+            }
+        }
+
+        // --- VOICE SEARCH (Optional Extra) ---
+        function toggleVoice() {
+            const btn = document.getElementById('mic-btn');
+            const input = document.getElementById('query');
+
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Voice search not supported in this browser.");
+                return;
+            }
+
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                btn.classList.add('listening');
+            };
+
+            recognition.onend = function() {
+                btn.classList.remove('listening');
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                searchPhotos();
+            };
+
+            recognition.start();
+        }
+    </script>
+</body>
+</html>
