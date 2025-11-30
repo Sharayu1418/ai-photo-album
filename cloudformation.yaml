@@ -239,7 +239,7 @@ Resources:
               return {'statusCode': 200, 'body': json.dumps('Indexed')}
 
   # ------------------------------------------------------------------
-  # S3 TRIGGER
+  # S3 TRIGGER PERMISSION
   # ------------------------------------------------------------------
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -258,6 +258,8 @@ Resources:
     Properties:
       Name: PhotoSearchAPI-CF
       Description: REST API for Assignment 3
+      BinaryMediaTypes:
+        - '*/*'
 
   # /search
   SearchResource:
@@ -374,4 +376,3 @@ Outputs:
   FrontendURL:
     Description: "Frontend URL"
     Value: !GetAtt FrontendBucket.WebsiteURL
-
