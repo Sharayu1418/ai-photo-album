@@ -39,6 +39,7 @@ Resources:
           - AllowedHeaders: ['*']
             AllowedMethods: ['GET', 'PUT', 'POST', 'HEAD']
             AllowedOrigins: ['*']
+            ExposedHeaders: ['x-amz-meta-customLabels']
 
   FrontendBucket:
     Type: AWS::S3::Bucket
@@ -342,6 +343,29 @@ Resources:
       Principal: s3.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
       SourceArn: !Sub 'arn:aws:s3:::${PhotosBucketName}'
+
+  # ------------------------------------------------------------------
+  # API GATEWAY RESPONSES
+  # ------------------------------------------------------------------
+  GatewayResponseDefault4XX:
+    Type: 'AWS::ApiGateway::GatewayResponse'
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,PUT,POST,DELETE,OPTIONS'"
+      ResponseType: DEFAULT_4XX
+      RestApiId: !Ref PhotoSearchAPI
+
+  GatewayResponseDefault5XX:
+    Type: 'AWS::ApiGateway::GatewayResponse'
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,PUT,POST,DELETE,OPTIONS'"
+      ResponseType: DEFAULT_5XX
+      RestApiId: !Ref PhotoSearchAPI
 
   # ------------------------------------------------------------------
   # API GATEWAY (REST API)
