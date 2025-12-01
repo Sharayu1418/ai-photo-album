@@ -456,6 +456,8 @@ Resources:
       AuthorizationType: NONE
       Integration:
         Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
         PassthroughBehavior: WHEN_NO_MATCH
         IntegrationResponses:
           - StatusCode: 200
@@ -463,8 +465,6 @@ Resources:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
               method.response.header.Access-Control-Allow-Methods: "'GET,PUT,OPTIONS'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
-            ResponseTemplates:
-              application/json: ''
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
