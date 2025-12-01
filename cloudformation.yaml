@@ -369,7 +369,7 @@ Resources:
       ResourceId: !Ref SearchResource
       HttpMethod: GET
       AuthorizationType: NONE
-      ApiKeyRequired: true
+      ApiKeyRequired: false
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
@@ -399,7 +399,7 @@ Resources:
       ResourceId: !Ref PhotosItemResource
       HttpMethod: PUT
       AuthorizationType: NONE
-      ApiKeyRequired: true
+      ApiKeyRequired: false
       RequestParameters:
         method.request.path.item: true
         method.request.header.x-amz-meta-customLabels: false
