@@ -304,7 +304,7 @@ Resources:
   # ------------------------------------------------------------------
   ApiKey:
     Type: AWS::ApiGateway::ApiKey
-    DependsOn: ApiDeploymentV3
+    DependsOn: ApiDeployment
     Properties:
       Name: PhotoSearchApiKey
       Enabled: true
@@ -314,7 +314,7 @@ Resources:
 
   UsagePlan:
     Type: AWS::ApiGateway::UsagePlan
-    DependsOn: ApiDeploymentV3
+    DependsOn: ApiDeployment
     Properties:
       UsagePlanName: PhotoSearchUsagePlan
       ApiStages:
@@ -415,7 +415,7 @@ Resources:
           application/json: '{"statusCode": 200}'
         PassthroughBehavior: WHEN_NO_MATCH
         IntegrationResponses:
-          - StatusCode: 200
+          - StatusCode: '200'
             ResponseTemplates:
               application/json: "{}"
             ResponseParameters:
@@ -466,7 +466,7 @@ Resources:
           integration.request.path.item: method.request.path.item
           integration.request.header.Content-Type: method.request.header.Content-Type
         IntegrationResponses:
-          - StatusCode: 200
+          - StatusCode: '200'
             ResponseTemplates:
               application/json: "{}"
             ResponseParameters:
@@ -492,7 +492,7 @@ Resources:
           application/json: '{"statusCode": 200}'
         PassthroughBehavior: WHEN_NO_MATCH
         IntegrationResponses:
-          - StatusCode: 200
+          - StatusCode: '200'
             ResponseTemplates:
               application/json: "{}"
             ResponseParameters:
@@ -516,7 +516,7 @@ Resources:
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PhotoSearchAPI}/*
 
   # Deployment
-  ApiDeploymentV3:
+  ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn: [SearchMethod, SearchOptionsMethod, PhotosPutMethod, PhotosOptionsMethod]
     Properties:
