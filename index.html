@@ -261,6 +261,19 @@
         }
 
     </style>
+    
+    <!-- API Gateway SDK Dependencies -->
+    <script type="text/javascript" src="lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/rollups/crypto-js.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apigClient.js"></script>
 </head>
 <body>
 
@@ -309,8 +322,10 @@
     </div>
 
     <script>
-        // CONFIGURATION
-        const API_ENDPOINT = 'https://zvantcfpdd.execute-api.us-east-1.amazonaws.com/prod'; 
+        // Initialize API Gateway SDK Client
+        var apigClient = apigClientFactory.newClient({
+            // apiKey: 'YOUR_API_KEY_HERE'  // Uncomment and add your API key if required
+        });
 
         function switchTab(tabName) {
             document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
@@ -323,7 +338,7 @@
             else btns[1].classList.add('active');
         }
 
-        // --- SEARCH FUNCTIONALITY ---
+        // --- SEARCH FUNCTIONALITY (using SDK) ---
         async function searchPhotos() {
             const query = document.getElementById('query').value.trim();
             const resultsDiv = document.getElementById('results');
@@ -338,17 +353,21 @@
             statusDiv.style.display = 'none';
 
             try {
-                // Call API Gateway
-                const response = await fetch(`${API_ENDPOINT}/search?q=${encodeURIComponent(query)}`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
+                // Use SDK method for GET /search
+                // Pass query parameter via additionalParams
+                var params = {};
+                var body = {};
+                var additionalParams = {
+                    queryParams: {
+                        q: query
+                    }
+                };
 
-                if (!response.ok) throw new Error('Search failed');
-
-                const data = await response.json();
-                // Handle different response structures (API Gateway sometimes wraps it)
-                const results = data.results || data; 
+                const response = await apigClient.searchGet(params, body, additionalParams);
+                
+                // SDK returns response.data
+                const data = response.data;
+                const results = data.results || data;
 
                 if (!results || results.length === 0) {
                     emptyDiv.style.display = 'block';
@@ -373,13 +392,13 @@
                 });
 
             } catch (err) {
-                console.error(err);
+                console.error('Search error:', err);
                 statusDiv.textContent = "Error searching photos. Please try again.";
                 statusDiv.classList.add('error');
             }
         }
 
-        // --- UPLOAD FUNCTIONALITY ---
+        // --- UPLOAD FUNCTIONALITY (using SDK) ---
         async function uploadPhoto() {
             const fileInput = document.getElementById('photo-file');
             const statusDiv = document.getElementById('upload-status');
@@ -398,41 +417,62 @@
             statusDiv.className = 'status-msg';
 
             try {
-                // 1. We use the filename as the key. 
-                // Ideally, we should sanitise this or use a UUID, but for this assignment filename is usually fine.
                 const filename = file.name;
 
-                // 2. Prepare Headers
-                const headers = {
-                    'Content-Type': file.type
+                // Read file as base64
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        // Get the binary data
+                        const binaryData = e.target.result;
+
+                        // SDK method params
+                        var params = {
+                            'item': filename,
+                            'Content-Type': file.type
+                        };
+                        
+                        var body = binaryData;
+                        
+                        var additionalParams = {
+                            headers: {
+                                'Content-Type': file.type
+                            }
+                        };
+
+                        // Use SDK method for PUT /photos/{item}
+                        const response = await apigClient.photosItemPut(params, body, additionalParams);
+
+                        statusDiv.textContent = "Photo uploaded successfully!";
+                        statusDiv.classList.add('success');
+                        // Reset form
+                        fileInput.value = '';
+
+                    } catch (uploadErr) {
+                        console.error('Upload error:', uploadErr);
+                        statusDiv.textContent = "Error uploading photo. Check console for details.";
+                        statusDiv.classList.add('error');
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = "Upload Photo";
+                    }
                 };
 
-                // 3. PUT to API Gateway
-                // Note: Your API Gateway needs a PUT /photos/{folder}/{item} or similar resource.
-                // Or if you set up PUT /photos, you might be passing the filename in the query or body?
-                // STANDARD ASSIGNMENT PATTERN: PUT /photos/bucket-name/filename
-                // BUT usually for this assignment, people configure: PUT /photos/{item} -> S3 Bucket/{item}
-                
-                const response = await fetch(`${API_ENDPOINT}/photos/${filename}`, {
-                    method: 'PUT',
-                    headers: headers,
-                    body: file
-                });
+                reader.onerror = function() {
+                    statusDiv.textContent = "Error reading file.";
+                    statusDiv.classList.add('error');
+                    btn.disabled = false;
+                    btn.textContent = "Upload Photo";
+                };
 
-                if (response.ok) {
-                    statusDiv.textContent = "Photo uploaded successfully!";
-                    statusDiv.classList.add('success');
-                    // Reset form
-                    fileInput.value = '';
-                } else {
-                    throw new Error(`Upload failed: ${response.statusText}`);
-                }
+                // Read file as ArrayBuffer for binary upload
+                reader.readAsArrayBuffer(file);
 
             } catch (err) {
-                console.error(err);
+                console.error('Upload error:', err);
                 statusDiv.textContent = "Error uploading photo. Check console for details.";
                 statusDiv.classList.add('error');
-            } finally {
                 btn.disabled = false;
                 btn.textContent = "Upload Photo";
             }
