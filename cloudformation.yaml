@@ -426,7 +426,6 @@ Resources:
       ApiKeyRequired: false
       RequestParameters:
         method.request.path.item: true
-        method.request.header.x-amz-meta-customLabels: false
         method.request.header.Content-Type: false
       Integration:
         Type: AWS
@@ -435,13 +434,12 @@ Resources:
         Credentials: !GetAtt APIGatewayS3Role.Arn
         RequestParameters:
           integration.request.path.item: method.request.path.item
-          integration.request.header.x-amz-meta-customLabels: method.request.header.x-amz-meta-customLabels
           integration.request.header.Content-Type: method.request.header.Content-Type
         IntegrationResponses:
           - StatusCode: 200
             ResponseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,x-amz-meta-customLabels'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
@@ -462,7 +460,7 @@ Resources:
         IntegrationResponses:
           - StatusCode: 200
             ResponseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-amz-meta-customLabels'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
               method.response.header.Access-Control-Allow-Methods: "'GET,PUT,OPTIONS'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             ResponseTemplates:

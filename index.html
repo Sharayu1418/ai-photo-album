@@ -301,12 +301,6 @@
                     <label for="photo-file">Select Photo</label>
                     <input type="file" id="photo-file" accept="image/png, image/jpeg, image/jpg">
                 </div>
-                
-                <div class="form-group">
-                    <label for="custom-labels">Custom Labels (Optional)</label>
-                    <input type="text" id="custom-labels" placeholder="e.g. vacation, family, boston">
-                    <p class="helper-text">Separate multiple labels with commas</p>
-                </div>
 
                 <button class="btn" onclick="uploadPhoto()" id="upload-btn" style="width: 100%">Upload Photo</button>
                 <div id="upload-status" class="status-msg"></div>
@@ -388,7 +382,6 @@
         // --- UPLOAD FUNCTIONALITY ---
         async function uploadPhoto() {
             const fileInput = document.getElementById('photo-file');
-            const labelsInput = document.getElementById('custom-labels');
             const statusDiv = document.getElementById('upload-status');
             const btn = document.getElementById('upload-btn');
 
@@ -408,15 +401,11 @@
                 // 1. We use the filename as the key. 
                 // Ideally, we should sanitise this or use a UUID, but for this assignment filename is usually fine.
                 const filename = file.name;
-                const customLabels = labelsInput.value.trim();
 
                 // 2. Prepare Headers
                 const headers = {
                     'Content-Type': file.type
                 };
-                if (customLabels) {
-                    headers['x-amz-meta-customLabels'] = customLabels;
-                }
 
                 // 3. PUT to API Gateway
                 // Note: Your API Gateway needs a PUT /photos/{folder}/{item} or similar resource.
@@ -435,7 +424,6 @@
                     statusDiv.classList.add('success');
                     // Reset form
                     fileInput.value = '';
-                    labelsInput.value = '';
                 } else {
                     throw new Error(`Upload failed: ${response.statusText}`);
                 }
