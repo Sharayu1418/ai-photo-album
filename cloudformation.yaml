@@ -304,7 +304,7 @@ Resources:
   # ------------------------------------------------------------------
   ApiKey:
     Type: AWS::ApiGateway::ApiKey
-    DependsOn: ApiDeploymentWithOptions
+    DependsOn: ApiDeploymentV3
     Properties:
       Name: PhotoSearchApiKey
       Enabled: true
@@ -314,7 +314,7 @@ Resources:
 
   UsagePlan:
     Type: AWS::ApiGateway::UsagePlan
-    DependsOn: ApiDeploymentWithOptions
+    DependsOn: ApiDeploymentV3
     Properties:
       UsagePlanName: PhotoSearchUsagePlan
       ApiStages:
@@ -416,6 +416,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         IntegrationResponses:
           - StatusCode: 200
+            ResponseTemplates:
+              application/json: "{}"
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
@@ -465,6 +467,8 @@ Resources:
           integration.request.header.Content-Type: method.request.header.Content-Type
         IntegrationResponses:
           - StatusCode: 200
+            ResponseTemplates:
+              application/json: "{}"
             ResponseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
               method.response.header.Access-Control-Allow-Headers: "'*'"
@@ -489,6 +493,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         IntegrationResponses:
           - StatusCode: 200
+            ResponseTemplates:
+              application/json: "{}"
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
               method.response.header.Access-Control-Allow-Methods: "'GET,PUT,OPTIONS'"
@@ -510,7 +516,7 @@ Resources:
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PhotoSearchAPI}/*
 
   # Deployment
-  ApiDeploymentWithOptions:
+  ApiDeploymentV3:
     Type: AWS::ApiGateway::Deployment
     DependsOn: [SearchMethod, SearchOptionsMethod, PhotosPutMethod, PhotosOptionsMethod]
     Properties:
