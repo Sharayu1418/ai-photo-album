@@ -24,6 +24,12 @@ Resources:
     DependsOn: LambdaInvokePermission
     Properties:
       BucketName: !Ref PhotosBucketName
+      # Enable Public Access (Disable blocking)
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
       NotificationConfiguration:
         LambdaConfigurations:
           - Event: s3:ObjectCreated:Put
@@ -57,6 +63,21 @@ Resources:
             Principal: '*'
             Action: 's3:GetObject'
             Resource: !Sub 'arn:aws:s3:::${FrontendBucketName}/*'
+
+  # ------------------------------------------------------------------
+  # S3 BUCKET POLICIES
+  # ------------------------------------------------------------------
+  PhotosBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref PhotosBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${PhotosBucketName}/*'
 
   # ------------------------------------------------------------------
   # IAM ROLES
