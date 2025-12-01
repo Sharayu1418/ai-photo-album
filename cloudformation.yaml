@@ -441,10 +441,12 @@ Resources:
           - StatusCode: 200
             ResponseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,x-amz-meta-customLabels'"
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
             method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
 
   # OPTIONS /photos/{item} (CORS)
   PhotosOptionsMethod:
@@ -457,8 +459,9 @@ Resources:
       Integration:
         Type: MOCK
         RequestTemplates:
-          application/json: '{"statusCode": 200}'
-        PassthroughBehavior: WHEN_NO_MATCH
+          application/json: ''
+          '': ''
+        PassthroughBehavior: NEVER
         IntegrationResponses:
           - StatusCode: 200
             ResponseParameters:
@@ -466,7 +469,7 @@ Resources:
               method.response.header.Access-Control-Allow-Methods: "'GET,PUT,OPTIONS'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             ResponseTemplates:
-              application/json: "{\"statusCode\": 200}"
+              application/json: ''
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
